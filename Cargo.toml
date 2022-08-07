@@ -1,0 +1,19 @@
+[package]
+name = "lualite"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+either = "1.7.0"
+#lazy_static = "1.4.0"
+nom = "7.1.1"
+#num_enum = "0.5.7"
+
+[dev-dependencies]
+criterion = { version = "0.3.6", features = ["html_reports"] }
+
+[[bench]]
+name = "greatest_common_denominator"
+harness = false
