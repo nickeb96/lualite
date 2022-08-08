@@ -1,3 +1,4 @@
+//! Representation of the operand bytes
 
 use std::fmt;
 use super::instruction::Instruction;
@@ -137,10 +138,13 @@ impl FromSource for Global {
   }
 }
 
-/// Literal integer operand small enough to fit in a single byte
+/// Integer literal small enough to fit into a single signed byte
 ///
-/// Must be in the range `-128..=127` to be an immediate.  Integers outside this
-/// range and other literal types like double-precision floats must use [`ConstantKey`].
+/// Values must be in the range `-128..=127` to be an immediate.  Immediates are
+/// embedded directly into an operand byte of an [`Instruction`].
+///
+/// Integers outside this range and other literal types like double-precision floats
+/// and strings must use [`ConstantKey`].
 #[derive(Debug, Copy, Clone)]
 #[repr(transparent)]
 pub struct Immediate(pub i8);
@@ -168,9 +172,15 @@ impl FromSource for Immediate {
     Immediate((instruction.0 >> SECOND_SOURCE_OFFSET) as u8 as i8)
   }
 }
+
 /// A key into a function's constant table
 ///
 /// Used for integer literals outsize the range of `-127..=128` and other literal types.
+/// A compiled function, [`Procedure`], has a field holding a table of [`ConstantValue`]s.
+/// A `ConstantKey` is an index into this table.
+///
+/// [`Procedure`]: crate::bytecode::Procedure
+/// [`ConstantValue`]: crate::bytecode::constant_value::ConstantValue
 #[derive(Debug, Copy, Clone)]
 #[repr(transparent)]
 pub struct ConstantKey(pub u8);
@@ -307,8 +317,17 @@ impl<R: Register> AsSource for WildSource<R> {
 
 /// An index into the bytecode array
 ///
-/// A 16 bit unsigned integer taking up both source operands.  It is used by the
+/// A 16 bit unsigned integer taking up both source operand bytes.  It is used by the
 /// jump family of instructions under [misc](../opcode/misc/index.html).
+///
+/// Instruction pointers are always an absolute offset from the beginning of a
+/// function's bytecode.  Setting a jump's instruction pointer target to be outside the
+/// bounds of the function's bytecode will cause a [`RuntimeError`] in the
+/// [`VirtualMachine`].  Runtime errors are safe and recoverable by host code, but hault
+/// client code running in a virtual machine when they are encountered.
+///
+/// [`RuntimeError`]: crate::runtime::RuntimeError
+/// [`VirtualMachine`]: crate::runtime::VirtualMachine
 #[derive(Debug, Copy, Clone)]
 #[repr(transparent)]
 pub struct InstructionPointer(pub u16);

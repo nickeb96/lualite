@@ -1,4 +1,20 @@
 #![allow(unused)]
+//! Comparison subcodes
+//!
+//! Instructions from the comparison category are parsed like so:
+//! ```text
+//! 10 xxx x xx  dddddddd  ffffffff  ssssssss
+//! |/ \ / | \|  +-------  +-------  +-------
+//! |   |  |  |  |         |         |
+//! |   |  |  |  |         |         |
+//! |   |  |  |  |         |         +-- the second source operand (wildcard or register depending on bit 5)
+//! |   |  |  |  |         +-- first source operand (wildcard or register depending on bit 5)
+//! |   |  |  |  +-- the destination operand (always interpreted as a register)
+//! |   |  |  +-- the type of the wildcard source operand
+//! |   |  +-- which source operand is a wildcard
+//! |   +-- comparison operation type subcode
+//! +-- super code (always 0b_10 for comparison)
+//! ```
 
 use std::fmt;
 use super::super::instruction::Instruction;
@@ -9,18 +25,26 @@ use super::super::operand::{
 };
 use super::common;
 
-// 3 bits
+/// Comparison sub-opcode type (bits 2..5)
 #[derive(Debug, Copy, Clone)]
 #[repr(u32)]
 pub enum Subcode {
+  /// `==`
   Eq = 0b_000_00,
+  /// `!=`
   Ne = 0b_001_00,
+  /// `<`
   Lt = 0b_010_00,
+  /// `>`
   Gt = 0b_011_00,
+  /// `<=`
   Le = 0b_100_00,
+  /// `>=`
   Ge = 0b_101_00,
-  Xa = 0b_110_00, // unused
-  Xb = 0b_111_00, // unused
+  /// Unused
+  Xa = 0b_110_00,
+  /// Unused
+  Xb = 0b_111_00,
 }
 
 impl Subcode {
@@ -81,8 +105,10 @@ impl From<Subcode> for Instruction {
   }
 }
 
+/// Whether the first source or the second source is a wildcard (bit 5)
 pub type WhichSourceIsWild = common::WhichSourceIsWild<5>;
 
+/// How to interpret the wildcard operand (bits 6..8)
 pub type WildSourceType = common::WildSourceType<6>;
 
 #[derive(Debug, Clone)]

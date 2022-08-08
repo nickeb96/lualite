@@ -1,4 +1,11 @@
 #![allow(unused)]
+//! Miscellaneous instruction subcodes
+//!
+//! Misc has 4 different sub-categories of instructions:
+//! - Jump
+//! - Move
+//! - Call
+//! - Interrupt (currently unimplemented)
 
 use std::fmt;
 use super::super::instruction::Instruction;
@@ -9,8 +16,7 @@ use super::super::operand::{
 };
 use super::common;
 
-
-// 2 bits
+/// Instruction type (bits 2..4)
 #[derive(Debug, Copy, Clone)]
 #[repr(u32)]
 pub enum Subcode {
@@ -46,13 +52,23 @@ impl From<Subcode> for Instruction {
 
 pub mod jump_subcode {
   use super::*;
-  // 2 bits
+  /// Reason for jumping (bits 4..6)
+  ///
+  /// For conditional jumps, bits 8..16 hold a conditional operand which will be
+  /// either a register or a global key depending on [`ConditionType`].
+  ///
+  /// For conditional and unconditional jumps, bits 16..32 hold an
+  /// [`InstructionPointer`](crate::bytecode::operand::InstructionPointer) to jump to.
   #[derive(Debug, Copy, Clone)]
   #[repr(u32)]
   pub enum Reason {
+    /// See [`jump_subcode::Special`]
     Special = 0b_00_0000,
+    /// Unconditional jump (no conditional operand)
     Always  = 0b_01_0000, // remaining 2 bits are unused
+    /// Jump if conditional operand (bits 8..16) is false
     IfFalse = 0b_10_0000,
+    /// Jump if conditional operand (bits 8..16) is true
     IfTrue  = 0b_11_0000,
   }
 
@@ -92,13 +108,17 @@ pub mod jump_subcode {
     }
   }
 
-  // 2 bits
+  /// Special reasons for jumping (bits 6..8)
   #[derive(Debug, Copy, Clone)]
   #[repr(u32)]
   pub enum Special {
+    /// Don't jump at all (no-op)
     NoOp    = 0b_00_000000,
+    /// Function return
     Return  = 0b_01_000000,
+    /// Currently unused
     Xa      = 0b_10_000000,
+    /// Currently unused
     Xb      = 0b_11_000000,
   }
 
@@ -126,6 +146,13 @@ pub mod jump_subcode {
     }
   }
 
+  /// How to interpret the conditional operand (bit 6)
+  ///
+  /// Possible values are:
+  /// - `ConditionType::Register` --- conditional operand will be interpreted as a register
+  /// - `ConditionType::Global` --- conditional operand will be interpreted as a key into the global table
+  ///
+  /// The conditional operand is in bits 8..16 of the instruction
   pub type ConditionType = common::WildDestinationType<6>;
 }
 

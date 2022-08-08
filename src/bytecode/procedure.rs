@@ -1,11 +1,10 @@
 
 use std::fmt;
-use std::rc::Weak;
-use std::cell::Cell;
 use super::constant_value::ConstantValue;
 use super::instruction::Instruction;
 use super::operand::{ConstantKey, FunctionKey};
 
+/// Compiled function
 #[derive(Debug)]
 pub struct Procedure {
   pub bytecode: Vec<Instruction>,

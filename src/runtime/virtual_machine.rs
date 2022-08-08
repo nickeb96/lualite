@@ -1,7 +1,7 @@
 
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::bytecode::instruction::Instruction;
+use crate::bytecode::Instruction;
 use crate::bytecode::opcode::{SuperCode, misc, index, comparison, arithmetic};
 use crate::bytecode::operand::{
   FromDestination, FromSource,
@@ -10,12 +10,12 @@ use crate::bytecode::operand::{
   WildDestination, WildSource,
 };
 use crate::bytecode::constant_value::ConstantValue;
-use crate::bytecode::procedure::Procedure;
+use crate::bytecode::Procedure;
 use super::error::RuntimeError;
 use super::{Value, InstructionCount, ExecutionStatus};
 
 #[derive(Debug)]
-pub struct StackFrame {
+struct StackFrame {
   procedure: Rc<Procedure>,
   pc: usize,
   register_start: usize,
@@ -27,11 +27,11 @@ pub struct StackFrame {
 /// Attach compiled functions to a `VirtualMachine` with [`insert_function`] or initialize it
 /// with a list of functions using [`with_functions`].
 ///
-/// Begin execution with [`start`].
+/// Begin execution with [`run`].
 ///
-/// [`insert_function`]: #method.insert_function
-/// [`with_functions`]: #method.with_functions
-/// [`start`]: #method.start
+/// [`insert_function`]: Self::insert_function
+/// [`with_functions`]: Self::with_functions
+/// [`run`]: Self::run
 #[derive(Debug)]
 pub struct VirtualMachine {
   call_stack: Vec<StackFrame>,
@@ -54,6 +54,7 @@ impl VirtualMachine {
     Self::default()
   }
 
+  /// Construct a `VirtualMachine` with an iterator of functions.
   pub fn with_functions<I, S, P>(functions: I) -> Self
   where
     I: IntoIterator<Item=(S, P)>,
@@ -106,11 +107,12 @@ impl VirtualMachine {
 }
 
 impl VirtualMachine {
-  /// Run the virtual machine to completion
+  /// Run the virtual machine to completion, starting with the function referred to
+  /// by `entry_name`.  If it does not exist in the virtual machine, a [`RuntimeError`]
+  /// is returned.  Otherwise, is used to lookup the entry function by name.
   ///
-  /// `entry_name` is used to lookup a function by name.  This function is called first
-  /// with the values in `args` passed to it.  Returns the result of `entry_name` as a
-  /// runtime [`Value`].
+  /// The entry function is called with the values in `args` and its return value is
+  /// returned by this function as a [`Value`].
   ///
   /// # Infinite loops:
   ///
@@ -140,14 +142,20 @@ impl VirtualMachine {
       .ok_or_else(|| RuntimeError::MissingFunction)?.clone();
     self.initialize_with_values(entry_procedure, args)?;
     self.execution_loop_infinite()?;
-    self.register_stack.get(0).cloned().ok_or_else(|| RuntimeError::InvalidRegister)
+    Ok(self.get_result())
   }
 
+  /// Gets the return value of the entry function.
+  ///
+  /// This will always be [`Value::Nil`] if the entry function has not finished.
   pub fn get_result(&self) -> Value {
-    // this should never fail
-    self.register_stack[0].clone()
+    self.register_stack.get(0).cloned().unwrap_or_else(|| Value::Nil)
   }
 
+  /// Sets the entry procedure of the virtual machine and sets its argument registers
+  /// to the [`Value`]s in `args`.
+  ///
+  /// Does **not** begin execution, unlike [`run`](Self::run).
   pub fn initialize_with_values(&mut self,
     entry_procedure: Rc<Procedure>,
     args: impl IntoIterator<Item=Value>,
@@ -168,6 +176,35 @@ impl VirtualMachine {
     Ok(())
   }
 
+  /// Execute instructions until either `limit` is reached or the entry procedure finishes.
+  ///
+  /// # Example:
+  /// ```rust
+  /// # use std::rc::Rc;
+  /// # use lualite::{parser, compiler, runtime::{VirtualMachine, Value, InstructionCount, ExecutionStatus}};
+  /// let source_code = r"
+  /// function forever(n)  # causes an infinite loop when n >= 0
+  ///   x = 0
+  ///   while x >= 0 do
+  ///     x = x + n
+  ///   end
+  /// end
+  /// ";
+  /// let (_, fn_decl) = parser::declaration::function_decl(source_code).expect("parse failed");
+  /// let procedure = compiler::compile_function(&fn_decl);
+  /// 
+  /// let mut vm = VirtualMachine::new();
+  /// // Initialize a call to: forever(10)
+  /// vm.initialize_with_values(Rc::new(procedure), [Value::Integer(10)]);
+  ///
+  /// // Run for 200 instructions
+  /// let status = vm.execution_loop(InstructionCount::Limited(200));
+  /// assert!(matches!(status, Ok(ExecutionStatus::Unfinished))); // Did not finish
+  ///
+  /// // Continue to run for 5000 more instructions
+  /// let status = vm.execution_loop(InstructionCount::Limited(5000));
+  /// assert!(matches!(status, Ok(ExecutionStatus::Unfinished))); // Will always return Unfinished
+  /// ```
   pub fn execution_loop(&mut self, limit: InstructionCount) -> Result<ExecutionStatus, RuntimeError> {
     match limit {
       InstructionCount::Unlimited => self.execution_loop_infinite(),
@@ -200,7 +237,7 @@ impl VirtualMachine {
 
 // Execution instructions
 impl VirtualMachine {
-  /// Execute a single instruction
+  /// Execute a single bytecode instruction
   pub fn execute(&mut self, instruction: Instruction) -> Result<(), RuntimeError> {
     match SuperCode::from(instruction) {
       SuperCode::Misc => self.execute_misc(instruction),

@@ -15,8 +15,8 @@ use crate::bytecode::operand::{
   InstructionPointer, FunctionKey,
 };
 use crate::bytecode::constant_value::ConstantValue;
-use crate::bytecode::instruction::Instruction;
-use crate::bytecode::procedure::Procedure;
+use crate::bytecode::Instruction;
+use crate::bytecode::Procedure;
 use crate::compiler::temporary::{Temporary, TempManager};
 
 type RawOrTemp = Either<RawRegister, Temporary>;

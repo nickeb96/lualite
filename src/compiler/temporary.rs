@@ -3,7 +3,7 @@ use std::fmt;
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::bytecode::operand::{self, AsDestination, AsSource};
-use crate::bytecode::instruction::Instruction;
+use crate::bytecode::Instruction;
 
 #[derive(Debug)]
 pub struct Temporary {

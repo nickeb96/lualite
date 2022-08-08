@@ -1,12 +1,12 @@
 //! Bytecode runtime
 //!
 //! Create a [`VirtualMachine`] and attach compiled functions to it.  Begin execution
-//! with [`start`], or use [`call_with_values`] and [`execution_loop`] for more fine grained
+//! with [`run`], or use [`initialize_with_values`] and [`execution_loop`] for more fine grained
 //! control.
 //!
-//! [`start`]: #method.start
-//! [`call_with_values`]: #method.call_with_values
-//! [`execution_loop`]: #method.execution_loop
+//! [`run`]: VirtualMachine::run
+//! [`initialize_with_values`]: VirtualMachine::initialize_with_values
+//! [`execution_loop`]: VirtualMachine::execution_loop
 //!
 //! # Example:
 //! ```rust

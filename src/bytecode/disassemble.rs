@@ -10,9 +10,9 @@ use crate::bytecode::opcode::{
 };
 use crate::bytecode::operand::{
   FromDestination, FromSource,
-  Register, RawRegister, Global, Immediate, ConstantKey,
-  WildDestination, WildSource,
-  InstructionPointer, FunctionKey,
+  RawRegister, Global,
+  WildDestination,
+  InstructionPointer, FunctionKey
 };
 
 pub fn disassemble_instruction(f: &mut fmt::Formatter, instruction: Instruction) -> fmt::Result {

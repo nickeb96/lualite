@@ -5,7 +5,7 @@ pub mod temporary;
 use std::fmt::Write;
 use std::borrow::Borrow;
 use crate::ast::{FunctionDecl, Declaration, Statement};
-use crate::bytecode::procedure::Procedure;
+use crate::bytecode::Procedure;
 use function::FunctionCompiler;
 
 pub fn compile_function(function: &FunctionDecl) -> Procedure {

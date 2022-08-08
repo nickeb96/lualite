@@ -1,5 +1,6 @@
 //! Arithmetic subcodes
 //!
+//! Instructions from the arithmetic category are parsed like so:
 //! ```text
 //! 11 xxx x xx  dddddddd  ffffffff  ssssssss
 //! |/ \ / | \|  +-------  +-------  +-------
@@ -11,19 +12,19 @@
 //! |   |  |  +-- the type of the wildcard source operand
 //! |   |  +-- which source operand is a wildcard
 //! |   +-- arithmetic operation type subcode
-//! +-- super code (always 0b11 for arithmetic)
+//! +-- super code (always 0b_11 for arithmetic)
 //! ```
 
 use std::fmt;
 use super::super::instruction::Instruction;
 use super::super::operand::{
-  FromDestination, FromSource, Register,
+  FromDestination, FromSource,
   RawRegister, Global, Immediate, ConstantKey,
   WildSource,
 };
 use super::common;
 
-// 3 bits
+/// Arithmetic sub-opcode type (bits 2..5)
 #[derive(Debug, Copy, Clone)]
 #[repr(u32)]
 pub enum Subcode {
@@ -33,7 +34,9 @@ pub enum Subcode {
   Div = 0b_011_00,
   Rem = 0b_100_00,
   Pow = 0b_101_00,
+  /// Currently unused
   Rot = 0b_110_00,
+  /// Currently unused
   Log = 0b_111_00,
 }
 
@@ -95,8 +98,10 @@ impl From<Subcode> for Instruction {
   }
 }
 
+/// Whether the first source or the second source is a wildcard (bit 5)
 pub type WhichSourceIsWild = common::WhichSourceIsWild<5>;
 
+/// How to interpret the wildcard operand (bits 6..8)
 pub type WildSourceType = common::WildSourceType<6>;
 
 #[derive(Debug, Clone)]

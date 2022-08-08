@@ -1,4 +1,21 @@
 #![allow(unused)]
+//! Indexing subcodes
+//!
+//! Instructions from the index category are parsed like so:
+//! ```text
+//! 01 x x xx xx  dddddddd  ssssssss  iiiiiiii
+//! |/ | | \| \|  +-------  +-------  +-------
+//! |  | |  |  |  |         |         |
+//! |  | |  |  |  |         |         |
+//! |  | |  |  |  |         |         +-- the index operand (register, global, immediate, or constant)
+//! |  | |  |  |  |         +-- source operand (register, global, immediate, or constant)
+//! |  | |  |  |  +-- the destination operand (register or global)
+//! |  | |  |  +-- the type of the index operand
+//! |  | |  +-- the type of the source operand
+//! |  | +-- the type of the destination operand
+//! |  +-- index on source or destination
+//! +-- super code (always 0b_01 for index)
+//! ```
 
 use super::common;
 use super::super::operand::{
@@ -8,7 +25,7 @@ use super::super::operand::{
 };
 use super::super::instruction::Instruction;
 
-// 1 bit
+/// Determines whether the index is on the source or the destination (bit 2)
 #[derive(Debug, Copy, Clone)]
 #[repr(u32)]
 pub enum On {
@@ -37,10 +54,13 @@ impl From<On> for Instruction {
   }
 }
 
+/// How to interpret the destination operand (bit 3)
 pub type DestinationType = common::WildDestinationType<3>;
 
+/// How to interpret the source operand (bits 4..6)
 pub type SourceType = common::WildSourceType<4>;
 
+/// How to interpret the index operand (bits 6..8)
 pub type IndexType = common::WildSourceType<6>;
 
 pub struct DecodedIndex {

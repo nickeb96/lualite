@@ -2,6 +2,7 @@
 use std::fmt;
 use std::ops::{BitOr, BitOrAssign};
 
+/// Transparent wrapper around an unsigned 32 bit integer
 #[derive(Debug, Copy, Clone)]
 #[repr(transparent)]
 pub struct Instruction(pub u32);

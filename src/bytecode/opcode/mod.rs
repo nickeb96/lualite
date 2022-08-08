@@ -1,5 +1,12 @@
+//! Representation of the opcode byte
+//!
+//! The opcode byte is the first byte (in little-endian) of an [`Instruction`].  All
+//! instructions are 32 bits.  The remaining 3 bytes are [operands] which are interpreted
+//! differently depending on the opcode.
+//!
+//! [operands]: super::operand
 
-pub mod common;
+mod common;
 pub mod misc;
 pub mod index;
 pub mod comparison;
@@ -8,7 +15,7 @@ pub mod arithmetic;
 use std::ops::BitOr;
 use super::instruction::Instruction;
 
-/// First 2 bits determining instruction category
+/// Determines instruction category (bits 0..2)
 #[derive(Debug, Copy, Clone)]
 #[repr(u32)]
 pub enum SuperCode {

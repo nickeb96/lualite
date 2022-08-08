@@ -1,23 +1,25 @@
 //! Instruction bytecode
 //!
-//! All instructions are 32 bits with the first byte being the opcode and the
-//! remaining 3 bytes being used for operands.  The way the operands are interpreted
-//! is dependent on the opcode byte.
+//! All instructions are 32 bits with the first byte being the [opcode] and the
+//! remaining 3 bytes being used for [operand]s.  The opcode byte determines how
+//! the operand bytes are interpreted.
 //!
-//! For the opcode byte, the first 2 bits are the [`SuperCode`](./opcode/enum.SuperCode.html)
-//! and they separate the instruction into 4 instruction categories: [mod@arithmetic],
+//! For the opcode byte, the first 2 bits are the [`SuperCode`](opcode::SuperCode).
+//! This bit field separates the opcode into 4 categories: [mod@arithmetic],
 //! [mod@comparison], [mod@index], and [mod@misc].
 
+mod instruction;
+mod procedure;
 pub mod opcode;
 pub mod operand;
-pub mod instruction;
-pub mod procedure;
 pub mod disassemble;
 pub mod constant_value;
 
-use opcode::{SuperCode, misc, index, comparison, arithmetic, common};
+use opcode::{SuperCode, misc, index, comparison, arithmetic};
 use operand::{AsDestination, AsSource, Register, WildSource, WildDestination, InstructionPointer, FunctionKey};
-use instruction::Instruction;
+
+pub use instruction::Instruction;
+pub use procedure::Procedure;
 
 // Misc
 
