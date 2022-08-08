@@ -4,6 +4,20 @@ use crate::ast::{IntegerLiteral, FloatLiteral, BooleanLiteral, StringLiteral};
 use crate::runtime;
 
 /// Constant literals in a function
+///
+/// `ConstantValue`s are stored in a [`Procedure`]'s constant table.  Instructions
+/// from that procedure can refer to its constant values with a [`ConstantKey`]
+/// (from [`bytecode::operand`]).  A constant key is just an index into that table.
+///
+/// Each procedure has its own table of `ConstantValue`s.
+///
+/// A [`VirtualMachine`] can create a runtime [`Value`] directly from a `ConstantValue`.
+///
+/// [`ConstantKey`]: crate::bytecode::operand::ConstantKey
+/// [`bytecode::operand`]: crate::bytecode::operand
+/// [`Procedure`]: crate::bytecode::Procedure
+/// [`VirtualMachine`]: crate::runtime::VirtualMachine
+/// [`Value`]: crate::runtime::Value
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum ConstantValue {
   Integer(i64),

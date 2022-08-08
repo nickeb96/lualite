@@ -1,12 +1,20 @@
 //! Instruction bytecode
 //!
-//! All instructions are 32 bits with the first byte being the [opcode] and the
+//! Bytecode represents a state in the `parse -> compile -> interpret` pipeline.  It is
+//! the output of the [`compiler`] and the input of a [`VirtualMachine`].
+//!
+//! [`compiler`]: crate::compiler
+//! [`VirtualMachine`]: crate::runtime::VirtualMachine
+//!
+//! All instructions are 32 bits, with the first byte being the [opcode] and the
 //! remaining 3 bytes being used for [operand]s.  The opcode byte determines how
 //! the operand bytes are interpreted.
 //!
 //! For the opcode byte, the first 2 bits are the [`SuperCode`](opcode::SuperCode).
-//! This bit field separates the opcode into 4 categories: [mod@arithmetic],
-//! [mod@comparison], [mod@index], and [mod@misc].
+//! This bit field separates the opcode into 4 instruction categories:
+//! [mod@arithmetic], [mod@comparison], [mod@index], and [mod@misc].  The
+//! remaining 6 bits of the opcode are interpreted differently depending on the
+//! category.
 
 mod instruction;
 mod procedure;
