@@ -1,4 +1,4 @@
 # Lualite
 
-TODO: fill out this readme
+[Documentation](https://nickeb96.github.io/doc/lualite)
 
